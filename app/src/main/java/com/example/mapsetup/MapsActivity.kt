@@ -103,15 +103,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
 
         // Apply the style factory function to the feature layer.
         datasetLayer?.setFeatureStyle(styleFactory)
-//        datasetLayer?.addOnFeatureClickListener { feature ->
-//            // Extract details from the clicked feature
-//            val featureId = feature.features[0].toString()
-//
-//
-//            // Display the message using Toast
-//            Toast.makeText(this, featureId, Toast.LENGTH_LONG).show()
-//            Log.d("a",featureId)
-//        }
+
     }
 
     override fun onFeatureClick(event: FeatureClickEvent) {
