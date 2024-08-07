@@ -101,7 +101,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
             return@StyleFactory null
         }
 
-        // Apply the style factory function to the feature layer.
         datasetLayer?.setFeatureStyle(styleFactory)
 
     }
