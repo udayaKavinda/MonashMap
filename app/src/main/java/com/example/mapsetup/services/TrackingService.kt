@@ -76,7 +76,7 @@ class TrackingService : LifecycleService() {
 
     private fun startForegroundService() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            createNotificationChannel(notificationManager)
+        createNotificationChannel(notificationManager)
 
         val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setAutoCancel(false)
