@@ -1,6 +1,7 @@
 package com.example.mapsetup
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,6 +13,8 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.lifecycle.Observer
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -20,6 +23,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.example.mapsetup.databinding.ActivityMapsBinding
+import com.example.mapsetup.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.example.mapsetup.services.TrackingService
+import com.google.android.gms.common.api.Status
 import com.google.android.gms.maps.model.DatasetFeature
 import com.google.android.gms.maps.model.Feature
 import com.google.android.gms.maps.model.FeatureClickEvent
@@ -28,6 +34,12 @@ import com.google.android.gms.maps.model.FeatureLayerOptions
 import com.google.android.gms.maps.model.FeatureStyle
 import com.google.android.gms.maps.model.FeatureType
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import java.util.Random
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFeatureClickListener {
@@ -41,6 +53,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
     private val random = Random()
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
+    private lateinit var autoCompleteFragment: AutocompleteSupportFragment
+    private var marker: Marker?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +62,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //serach
+        Places.initialize(applicationContext,"AIzaSyBF3z--DNmMn09CSsFm5T4I2EN6fCoVwx0")
+        autoCompleteFragment=supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+        autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID,Place.Field.ADDRESS,Place.Field.LAT_LNG))
+        val bounds = RectangularBounds.newInstance(
+            LatLng(-37.9195, 145.1172),
+            LatLng(-37.8965, 145.1524)
+        )
+        autoCompleteFragment.setLocationBias(bounds)
+        autoCompleteFragment.setOnPlaceSelectedListener(object :PlaceSelectionListener{
+            override fun onError(p0: Status) {
+                Log.i("Error",p0.statusMessage.toString())
+            }
+
+            override fun onPlaceSelected(place: Place) {
+                marker?.remove()
+                val latLng=place.latLng
+                val newLatLngZoom=CameraUpdateFactory.newLatLngZoom(latLng,18F)
+                marker=mMap.addMarker(MarkerOptions().position(latLng).title("Destinatiom"))
+                mMap.animateCamera(newLatLngZoom)
+            }
+
+        })
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         setupPopupWindow()
+
+        binding.button.setOnClickListener {
+        sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+        }
+        subscribeToObservers()
 
     }
 
@@ -179,5 +223,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         updateRunnable?.let {
             handler.removeCallbacks(it)
         }
+    }
+
+    private fun sendCommandToService(action: String) {
+        Intent(this, TrackingService::class.java).also {
+            it.action = action
+            startService(it)
+        }
+    }
+
+    private fun subscribeToObservers() {
+//        TrackingService.isTracking.observe( viewLifecycleOwner, Observer {
+//            Log.d("TrackingService", "isTracking: $it")
+//        })
+
+        TrackingService.pathPoints.observe(this, Observer { pathPoint ->
+            // Update UI based on pathPoints
+            pathPoint?.let {
+                // Handle new location
+                Log.d("MainActivity", "Path Point: $it")
+            }
+        })
     }
 }
