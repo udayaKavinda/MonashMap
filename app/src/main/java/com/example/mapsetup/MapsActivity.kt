@@ -5,6 +5,8 @@ import com.google.maps.android.PolyUtil
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.mapsetup.databinding.ActivityMapsBinding
 import com.example.mapsetup.models.DirectionsResponse
@@ -46,6 +49,7 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFeatureClickListener {
@@ -122,7 +126,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         // Get the DATASET feature layer.
         mMap = googleMap
         // Add a marker in Sydney and move the camera
-//        mMap.addMarker(MarkerOptions().position(monashCordinates).title("Marker in Sydney"))
+        addMarkers()
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(originLatLng,17F))
         mMap.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-37.9195, 145.1172), LatLng(-37.8965, 145.1524)))
         mMap.setMinZoomPreference(15F)
@@ -164,6 +169,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         setupDirectionsService()
     }
 
+
     private fun styleDatasetsLayer() {
 
         // Create the style factory function.
@@ -171,7 +177,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
             // Check if the feature is an instance of DatasetFeature.
 
             if (feature is DatasetFeature) {
-                Log.d("aaa", feature.getDatasetAttributes().toString())
+//                Log.d("aaa", feature.getDatasetAttributes().toString())
 
 
                 return@StyleFactory FeatureStyle.Builder()
@@ -179,7 +185,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
                     // solid green border.
 //                    .fillColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("fillColor").toString().drop(2),16).toInt())
                     .strokeColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("stroke").toString().drop(2),16).toInt())
-                    .strokeWidth(feature.getDatasetAttributes().get("stroke-width").toString().toFloat())
+                    .strokeWidth(feature.getDatasetAttributes().get("stroke-width").toString().toFloat()-1)
                     .build()
             }
             return@StyleFactory null
@@ -309,5 +315,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
             polyline.remove()
         }
     }
+
+    private fun addMarkers() {
+        val location = LatLng(-37.907949, 145.137300)
+
+        // Get the drawable and resize it
+        val drawable = ContextCompat.getDrawable(this, R.drawable.hazard)!!
+        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        // Resize the bitmap
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false) // 100x100 pixels
+
+        // Add the marker with the resized bitmap as the icon
+        val markerOptions = MarkerOptions()
+            .position(location)
+            .title("Flood")
+            .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap))
+
+        mMap.addMarker(markerOptions)
+    }
+
 
 }
