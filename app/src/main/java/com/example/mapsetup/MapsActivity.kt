@@ -169,14 +169,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         // Create the style factory function.
         val styleFactory = FeatureLayer.StyleFactory { feature: Feature ->
             // Check if the feature is an instance of DatasetFeature.
+
             if (feature is DatasetFeature) {
+                Log.d("aaa", feature.getDatasetAttributes().toString())
+
 
                 return@StyleFactory FeatureStyle.Builder()
                     // Define a style with green fill at 50% opacity and
                     // solid green border.
-                    .fillColor(0x8000ff00.toInt())
-                    .strokeColor(0xff00ff00.toInt())
-                    .strokeWidth(2F)
+//                    .fillColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("fillColor").toString().drop(2),16).toInt())
+                    .strokeColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("stroke").toString().drop(2),16).toInt())
+                    .strokeWidth(feature.getDatasetAttributes().get("stroke-width").toString().toFloat())
                     .build()
             }
             return@StyleFactory null
