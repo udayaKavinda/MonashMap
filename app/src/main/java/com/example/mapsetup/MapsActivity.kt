@@ -1,29 +1,26 @@
 package com.example.mapsetup
 
-import DirectionsService
-import com.google.maps.android.PolyUtil
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.PopupWindow
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.mapsetup.databinding.ActivityMapsBinding
-import com.example.mapsetup.models.DirectionsResponse
-import com.example.mapsetup.models.Polyline
+import com.example.mapsetup.managers.DirectionsManager
+import com.example.mapsetup.managers.FeatureLayerManager
+import com.example.mapsetup.managers.MapManager
+import com.example.mapsetup.managers.PopupManager
 import com.example.mapsetup.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.example.mapsetup.other.MapsActivityState
+import com.example.mapsetup.services.SensorService
 import com.example.mapsetup.services.TrackingService
+import com.example.mapsetup.services.WeatherService
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -37,43 +34,38 @@ import com.google.android.gms.maps.model.FeatureLayerOptions
 import com.google.android.gms.maps.model.FeatureStyle
 import com.google.android.gms.maps.model.FeatureType
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFeatureClickListener {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
+
+    private lateinit var directionsManager: DirectionsManager
+    private lateinit var mapManager: MapManager
+    private lateinit var featureLayerManager: FeatureLayerManager
+    private lateinit var mapsActivityState: MapsActivityState
 
     private lateinit var mMap: GoogleMap
+
     private lateinit var destinationLatLng: LatLng
     private var originLatLng = LatLng(-37.911, 145.133)
+
     private lateinit var binding: ActivityMapsBinding
-    private var datasetLayer: FeatureLayer? = null
-    var lastGlobalId: String? = null
-    private lateinit var popupWindow: PopupWindow
-    private lateinit var popupTextView: TextView
     private lateinit var autoCompleteFragment: AutocompleteSupportFragment
     private var marker: Marker?=null
-    private val polylineList = mutableListOf<com.google.android.gms.maps.model.Polyline>()
-    private lateinit var directionsService: DirectionsService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        mapsActivityState=MapsActivityState.IDEAL
 
-        //serach
         Places.initialize(applicationContext,"AIzaSyBF3z--DNmMn09CSsFm5T4I2EN6fCoVwx0")
         autoCompleteFragment=supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
         autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID,Place.Field.ADDRESS,Place.Field.LAT_LNG))
@@ -81,13 +73,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
             LatLng(-37.9195, 145.1172),
             LatLng(-37.8965, 145.1524)
         )
-        autoCompleteFragment.setLocationBias(bounds)
-        autoCompleteFragment.setOnPlaceSelectedListener(object :PlaceSelectionListener{
+        autoCompleteFragment.setLocationRestriction(bounds)
+        autoCompleteFragment.setHint("Search here");
+        autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onError(p0: Status) {
                 Log.i("Error",p0.statusMessage.toString())
             }
 
             override fun onPlaceSelected(place: Place) {
+                autoCompleteFragment.setHint(place.address?.toString() ?: "Search here")
+//                Log.i("asd", place.address?.toString() ?: "s")
                 marker?.remove()
                 destinationLatLng=place.latLng
                 val newLatLngZoom=CameraUpdateFactory.newLatLngZoom(destinationLatLng,18F)
@@ -103,136 +98,68 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        setupPopupWindow()
+
 
         binding.button.setOnClickListener {
-            if(binding.button.text=="Cancel"){
-                binding.button.visibility= View.GONE
+            if(mapsActivityState==MapsActivityState.DESTINATION_SET){
+                mapsActivityState=MapsActivityState.DIRECTIONS_START
+                directionsManager.getDirections(originLatLng,destinationLatLng)
+                binding.button.text="Cancel"
+            }else if(mapsActivityState==MapsActivityState.DIRECTIONS_START){
+                mapsActivityState=MapsActivityState.IDEAL
                 binding.button.text="Directions"
-                marker?.remove()
-                marker=null
-                removeAllPolylines()
-                return@setOnClickListener
+                binding.button.visibility= View.GONE
+                directionsManager.removeDirections()
+                mapManager.removeDestinationMarker()
             }
-            drawPolyline()
-            binding.button.text="Cancel"
         }
         sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+        startWeatherService()
+        startSensorService()
         subscribeToObservers()
-
     }
     override fun onMapReady(googleMap: GoogleMap) {
 
+
+
         // Get the DATASET feature layer.
         mMap = googleMap
-        // Add a marker in Sydney and move the camera
-        addMarkers()
+        mapManager = MapManager(this,binding.root, mMap)
+        directionsManager = DirectionsManager(this, mapManager)
+        featureLayerManager= FeatureLayerManager(this,binding.root,mMap)
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(originLatLng,17F))
-        mMap.setLatLngBoundsForCameraTarget(LatLngBounds(LatLng(-37.9195, 145.1172), LatLng(-37.8965, 145.1524)))
-        mMap.setMinZoomPreference(15F)
-        mMap.uiSettings.apply {
-            isMyLocationButtonEnabled=true
-        }
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ){
-            mMap.isMyLocationEnabled=true
-        }
 
-        datasetLayer = mMap.getFeatureLayer(
-            FeatureLayerOptions.Builder()
-            .featureType(FeatureType.DATASET)
-            // Specify the dataset ID.
-            .datasetId("009fd42a-98a3-49f1-a54d-15371a561451")
-            .build())
 
-        // Apply style factory function to DATASET layer.
-        datasetLayer?.addOnFeatureClickListener(this)
         mMap.setOnMapLongClickListener { latLng ->
-            if(marker==null) {
-                destinationLatLng = latLng
-                marker = mMap.addMarker(
-                    MarkerOptions().position(latLng)
-                        .title("Marker at ${latLng.latitude}, ${latLng.longitude}")
-                )
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+            if(mapsActivityState==MapsActivityState.IDEAL){
+                mapsActivityState=MapsActivityState.DESTINATION_SET
+                destinationLatLng=latLng
+                mapManager.addDestinationMarker(latLng)
                 binding.button.visibility = View.VISIBLE
+
+            }else if(mapsActivityState==MapsActivityState.DESTINATION_SET){
+                destinationLatLng=latLng
+                mapManager.removeDestinationMarker()
+                mapManager.addDestinationMarker(latLng)
             }
-        }
-        styleDatasetsLayer()
-        setupDirectionsService()
-    }
-
-
-    private fun styleDatasetsLayer() {
-
-        // Create the style factory function.
-        val styleFactory = FeatureLayer.StyleFactory { feature: Feature ->
-            // Check if the feature is an instance of DatasetFeature.
-
-            if (feature is DatasetFeature) {
-//                Log.d("aaa", feature.getDatasetAttributes().toString())
-
-
-                return@StyleFactory FeatureStyle.Builder()
-                    // Define a style with green fill at 50% opacity and
-                    // solid green border.
-//                    .fillColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("fillColor").toString().drop(2),16).toInt())
-                    .strokeColor(Integer.parseUnsignedInt(feature.getDatasetAttributes().get("stroke").toString().drop(2),16).toInt())
-                    .strokeWidth(feature.getDatasetAttributes().get("stroke-width").toString().toFloat()-1)
-                    .build()
-            }
-            return@StyleFactory null
-        }
-
-        datasetLayer?.setFeatureStyle(styleFactory)
-
-    }
-
-    override fun onFeatureClick(event: FeatureClickEvent) {
-        // Get the dataset feature affected by the click.
-        val clickFeatures: MutableList<Feature> = event.features
-        lastGlobalId = null
-        if (clickFeatures.get(0) is DatasetFeature) {
-            lastGlobalId = ((clickFeatures.get(0) as DatasetFeature).getDatasetAttributes().get("stroke"))
-            showPopupWindow()
 
         }
     }
-
-    private fun setupPopupWindow() {
-        // Inflate the popup window layout
-        val inflater = LayoutInflater.from(this)
-        val popupView = inflater.inflate(R.layout.popup_window, null)
-        popupTextView = popupView.findViewById(R.id.popup_text)
-        // Create the PopupWindow
-        popupWindow = PopupWindow(popupView,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            isFocusable = true // Allows interaction with the PopupWindow
-            isOutsideTouchable = true // Dismiss the window when touching outside
-            setBackgroundDrawable(null) // Optional: set a background to make it look better
-        }
-    }
-
-    private fun showPopupWindow() {
-        // Show the PopupWindow
-        popupWindow.showAtLocation(binding.root, android.view.Gravity.CENTER, 0, 0)
-//        Toast.makeText(this, lastGlobalId.toString(), Toast.LENGTH_LONG).show()
-
-    }
-
 
     private fun sendCommandToService(action: String) {
         Intent(this, TrackingService::class.java).also {
             it.action = action
+            startService(it)
+        }
+    }
+    private fun startWeatherService() {
+        Intent(this, WeatherService::class.java).also {
+            startService(it)
+        }
+    }
+
+    private fun startSensorService() {
+        Intent(this, SensorService::class.java).also {
             startService(it)
         }
     }
@@ -248,95 +175,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, FeatureLayer.OnFea
         })
     }
 
+//    private fun updateUI(){
+//        if(mapsActivityState==MapsActivityState.IDEAL){
+//            binding.button.visibility= View.VISIBLE
+//
+//        }else if(mapsActivityState==MapsActivityState.DESTINATION_SET){
+//
+//            binding.button.visibility= View.GONE
+//        }else if(mapsActivityState==MapsActivityState.DIRECTIONS_START){
+//
+//
+//        }
+//    }
 
 
-    fun setupDirectionsService(){
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://maps.googleapis.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
-        directionsService = retrofit.create(DirectionsService::class.java)
 
-    }
-
-    fun drawPolyline(){
-        val origin = originLatLng.latitude.toString()+","+originLatLng.longitude.toString()
-        val destination = destinationLatLng.latitude.toString()+","+destinationLatLng.longitude.toString()
-        Toast.makeText(this, destination, Toast.LENGTH_LONG).show()
-        val call = directionsService.getDirections(origin, destination, "AIzaSyBF3z--DNmMn09CSsFm5T4I2EN6fCoVwx0")
-
-        call.enqueue(object : retrofit2.Callback<DirectionsResponse> {
-            override fun onResponse(call: Call<DirectionsResponse>, response: retrofit2.Response<DirectionsResponse>) {
-                if (response.isSuccessful) {
-                    val directionsResponse = response.body()
-//                    Log.d("MainActivityy", "Response:")
-                    directionsResponse?.routes?.reversed()?.forEachIndexed { index, route ->
-                        // Log the route summary or other details if needed
-//                        Log.d("MainActivityy", "Route $index Summary: ${route}")
-
-                        // Extract polyline points from each route
-                        val polylinePoints = route.overview_polyline.points
-                        val polyline = PolyUtil.decode(polylinePoints)
-
-                        // Add the polyline to the map
-                        if(index==directionsResponse.routes.size-1) {
-                            val line=mMap.addPolyline(PolylineOptions().addAll(polyline).color(Color.BLACK).width(10f))
-                            polylineList.add(line)
-
-                        }else{
-                            val line =mMap.addPolyline(PolylineOptions().addAll(polyline).color(Color.BLUE).width(5f))
-                            polylineList.add(line)
-                        }
-
-                        }
-
-                } else {
-                    Log.e("MainActivity", "Error: ${response.errorBody()?.string()}")
-                }
-//                    directionsResponse?.routes?.firstOrNull()?.legs?.firstOrNull()?.steps?.forEach { step ->
-//                        val polylinePoints = step.polyline.points
-//                        val polyline = PolyUtil.decode(polylinePoints)
-//                        mMap.addPolyline(PolylineOptions().addAll(polyline))
-//                    }
-//                } else {
-//                    Log.e("MainActivityy", "Error: ${response.errorBody()?.string()}")
-//                }
-            }
-
-            override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
-                Log.e("MainActivityy", "Failure: ${t.message}")
-            }
-        })
-
-    }
-    private fun removeAllPolylines() {
-        polylineList.forEach { polyline ->
-            polyline.remove()
-        }
-    }
-
-    private fun addMarkers() {
-        val location = LatLng(-37.907949, 145.137300)
-
-        // Get the drawable and resize it
-        val drawable = ContextCompat.getDrawable(this, R.drawable.hazard)!!
-        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-
-        // Resize the bitmap
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false) // 100x100 pixels
-
-        // Add the marker with the resized bitmap as the icon
-        val markerOptions = MarkerOptions()
-            .position(location)
-            .title("Flood")
-            .icon(BitmapDescriptorFactory.fromBitmap(resizedBitmap))
-
-        mMap.addMarker(markerOptions)
-    }
 
 
 }

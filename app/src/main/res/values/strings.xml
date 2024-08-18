@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">mapsetup</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="MAP_ID">2fd64daea8ecb355</string>
+    <string name="DATASET_ID">009fd42a-98a3-49f1-a54d-15371a561451</string>
+    <string name="MAPS_API_KEY">AIzaSyBF3z--DNmMn09CSsFm5T4I2EN6fCoVwx0</string>
 </resources>

@@ -1,9 +1,11 @@
+package com.example.mapsetup.api
+
 import com.example.mapsetup.models.DirectionsResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface DirectionsService {
+interface DirectionsServiceApi {
     @GET("maps/api/directions/json")
     fun getDirections(
         @Query("origin") origin: String,

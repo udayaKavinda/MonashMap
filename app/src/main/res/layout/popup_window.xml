@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:text="Artificial"
+            android:text="Natural"
             android:textColor="#5D4037"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:text="Concrete Bricks"
+            android:text="Soil"
             android:textColor="#3E2723"
             android:textSize="16sp" />
 
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:text="Moisture Level: 5%"
+            android:text="Moisture Level: 15%"
             android:textColor="#3E2723"
             android:textSize="16sp" />
 
@@ -45,7 +45,7 @@
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Slope: 2°"
+            android:text="Slope: 4°"
             android:textColor="#3E2723"
             android:textSize="16sp" />
     </LinearLayout>
@@ -57,5 +57,5 @@
         android:layout_gravity="center_vertical"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:src="@drawable/concreate_bricks" />
+        android:src="@drawable/soil_road" />
 </LinearLayout>
