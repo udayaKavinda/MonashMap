@@ -1,11 +1,15 @@
 package com.example.mapsetup.services
-import com.example.mapsetup.api.WeatherServiceApi
+
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.example.mapsetup.notifications.NotificationHelper
+import com.example.mapsetup.api.WeatherServiceApi
 import com.example.mapsetup.models.WeatherResponse
+import com.example.mapsetup.other.Constants
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.Call
@@ -18,15 +22,22 @@ import java.util.concurrent.TimeUnit
 class WeatherService : LifecycleService() {
     private lateinit var retrofit: Retrofit
     private lateinit var weatherServiceApi: WeatherServiceApi
+    private lateinit var notificationHelper: NotificationHelper
     private val TAG = "WeatherService"
     private val BASE_URL = "https://api.open-meteo.com/"
     private lateinit var scheduler: ScheduledExecutorService
-    private var currentLatitude:Double=-37.9195
-    private var currentLongitude:Double=145.1172
+    private var currentLatitude: Double = -37.9195
+    private var currentLongitude: Double = 145.1172
 
+    companion object {
+        var weatherData = MutableLiveData<WeatherResponse>()
+    }
 
     override fun onCreate() {
         super.onCreate()
+        notificationHelper = NotificationHelper(this)
+        startForeground(Constants.NOTIFICATION_ID, notificationHelper.getNotification())
+
         retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -38,13 +49,12 @@ class WeatherService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::scheduler.isInitialized) {
-            Log.d(TAG, "Scheduler initialized")
             scheduler = Executors.newScheduledThreadPool(1)
             scheduler.scheduleAtFixedRate({
                 fetchWeatherData(currentLatitude, currentLongitude)
             }, 0, 6, TimeUnit.SECONDS)
         }
-        return  super.onStartCommand(intent, flags, startId) // Keep the service running
+        return super.onStartCommand(intent, flags, startId)
     }
 
     private fun fetchWeatherData(latitude: Double, longitude: Double) {
@@ -71,18 +81,17 @@ class WeatherService : LifecycleService() {
     }
 
     private fun handleWeatherData(weatherResponse: WeatherResponse?) {
-        Log.d(TAG, "Weather data received: $weatherResponse")
-        // Process weather data or send it back to an Activity via BroadcastReceiver if needed
+        weatherResponse?.let {
+            weatherData.postValue(it)
+//            Log.d(TAG, "Weather data received: $it")
+        }
     }
 
     private fun subscribeToObservers() {
         TrackingService.pathPoints.observe(this, Observer { pathPoint ->
-            // Update UI based on pathPoints
             pathPoint?.let {
-                currentLatitude=it.latitude
-                currentLongitude=it.longitude
-                // Handle new location
-//                Log.d("WeatherService", "Path Point: $it")
+                currentLatitude = it.latitude
+                currentLongitude = it.longitude
             }
         })
     }
@@ -91,13 +100,13 @@ class WeatherService : LifecycleService() {
         Log.e(TAG, "Weather data fetch error", throwable)
     }
 
+    override fun onDestroy() {
+        scheduler.shutdown()
+        super.onDestroy()
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        scheduler.shutdown() // Shut down the scheduler
     }
 }

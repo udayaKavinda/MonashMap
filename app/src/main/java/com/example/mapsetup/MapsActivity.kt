@@ -64,6 +64,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         mapsActivityState=MapsActivityState.IDEAL
 
         Places.initialize(applicationContext,"AIzaSyBF3z--DNmMn09CSsFm5T4I2EN6fCoVwx0")

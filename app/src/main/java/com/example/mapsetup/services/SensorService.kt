@@ -9,6 +9,12 @@ import android.hardware.SensorManager
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.MutableLiveData
+import com.example.mapsetup.models.Acceleromrter
+import com.example.mapsetup.models.Gyroscope
+import com.example.mapsetup.models.Magnetometer
+import com.example.mapsetup.notifications.NotificationHelper
+import com.example.mapsetup.other.Constants.NOTIFICATION_ID
 
 class SensorService : LifecycleService(), SensorEventListener {
 
@@ -20,9 +26,19 @@ class SensorService : LifecycleService(), SensorEventListener {
     private var lastAccelerometerValues: FloatArray? = null
     private var lastGyroscopeValues: FloatArray? = null
     private var lastMagnetometerValues: FloatArray? = null
+    private lateinit var notificationHelper: NotificationHelper
+
+    companion object {
+        var accelerometerData = MutableLiveData<Acceleromrter>()
+        var magnetometerData = MutableLiveData<Magnetometer>()
+        var gyroscopeData = MutableLiveData<Gyroscope>()
+    }
 
     override fun onCreate() {
         super.onCreate()
+        notificationHelper = NotificationHelper(this)
+        startForeground(NOTIFICATION_ID, notificationHelper.getNotification())
+
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
         // Initialize sensors
@@ -32,6 +48,7 @@ class SensorService : LifecycleService(), SensorEventListener {
 
         startLocationUpdates()
     }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Start the sensor monitoring when the service is started
@@ -75,15 +92,18 @@ class SensorService : LifecycleService(), SensorEventListener {
             when (sensor) {
                 Sensor.TYPE_ACCELEROMETER -> {
                     name = "ACCELEROMETER"
+                    accelerometerData.postValue(Acceleromrter(currentValues[0], currentValues[1], currentValues[2]))
                 }
                 Sensor.TYPE_GYROSCOPE -> {
                     name = "GYROSCOPE"
+                    gyroscopeData.postValue(Gyroscope(currentValues[0], currentValues[1], currentValues[2]))
                 }
                 Sensor.TYPE_MAGNETIC_FIELD -> {
                     name = "MAGNETIC_FIELD"
+                    magnetometerData.postValue(Magnetometer(currentValues[0], currentValues[1], currentValues[2]))
                 }
             }
-            Log.d("SensorService$name", ": x=${currentValues[0]}, y=${currentValues[1]}, z=${currentValues[2]}")
+//            Log.d("SensorService$name", ": x=${currentValues[0]}, y=${currentValues[1]}, z=${currentValues[2]}")
         }
     }
 
