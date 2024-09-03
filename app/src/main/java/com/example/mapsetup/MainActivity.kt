@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 //            startActivity(intent)
         }
         dataButton.setOnClickListener {
-            val intent = Intent(this, DataVisualize::class.java)
+            val intent = Intent(this, Bluetooth::class.java)
             startActivity(intent)
         }
 
