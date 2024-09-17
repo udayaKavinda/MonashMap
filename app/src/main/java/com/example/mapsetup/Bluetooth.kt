@@ -1,8 +1,13 @@
 package com.example.mapsetup
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.bluetooth.le.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -34,51 +39,17 @@ class Bluetooth : AppCompatActivity() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                gatt?.requestMtu(512)
                 Log.i("ScanCallback", "Connected to GATT server.")
-                Log.i("ScanCallback", "Attempting to start service discovery: ${gatt?.discoverServices()}")
+                gatt?.requestMtu(512)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i("ScanCallback", "Disconnected from GATT server.")
             }
         }
-
-//        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-//            super.onServicesDiscovered(gatt, status)
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-//                Log.i("ScanCallback", "Services discovered: ${gatt?.services}")
-//                val service = gatt?.getService(UUID.fromString("00000000-cc7a-482a-984a-7f2ed5b3e58f"))
-//                val characteristic2 = service?.getCharacteristic(UUID.fromString("00000000-8e22-4541-9d4c-21edae82ed19"))
-//                val characteristic= service?.getCharacteristic(UUID.fromString("00000001-8e22-4541-9d4c-21edae82ed19"))
-//
-//                characteristic2?.setValue(byteArrayOf(0x01)) // Example value
-//                gatt?.writeCharacteristic(characteristic2)
-//
-//                gatt?.setCharacteristicNotification(characteristic, true)
-//                val descriptor = characteristic?.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
-//                descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-//                gatt?.writeDescriptor(descriptor)
-//
-//
-////                Log.i("ScanCallback", characteristic2?.descriptors?.get(0)?.uuid.toString())
-////                gatt?.services?.forEach { service ->
-////                    Log.i("ScanCallback", "Service uuids: ${service.uuid}")
-////                    if (service.uuid.toString() == "00000000-cc7a-482a-984a-7f2ed5b3e58f") {
-////                        service.characteristics.forEach { characteristic ->
-////                            Log.i("ScanCallback", "Characteristic uuids: ${characteristic.uuid}")
-////                        }
-////                    }
-////                }
-//                // Interact with the services here
-//            } else {
-//                Log.w("ScanCallback", "onServicesDiscovered received: $status")
-//            }
-//        }
-
         override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
             super.onMtuChanged(gatt, mtu, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.i("ScanCallback", "MTU size changed to $mtu")
-                gatt?.discoverServices()
+                Log.i("ScanCallback", "Attempting to start service discovery: ${gatt?.discoverServices()}")
             } else {
                 Log.e("ScanCallback", "Failed to change MTU size")
             }
@@ -89,9 +60,6 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         val service = gatt?.getService(UUID.fromString("00000000-cc7a-482a-984a-7f2ed5b3e58f"))
         val characteristic = service?.getCharacteristic(UUID.fromString("00000001-8e22-4541-9d4c-21edae82ed19"))
         characteristic2= service?.getCharacteristic(UUID.fromString("00000000-8e22-4541-9d4c-21edae82ed19"))
-//        ggatt?.requestMtu(156)
-
-
          // Example value
         if (characteristic != null) {
             val notificationEnabled = gatt.setCharacteristicNotification(characteristic, true)
@@ -140,16 +108,8 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             characteristic?.value?.let {
 //                Log.i("ScanCallback", value.toString()+String(it, Charsets.UTF_8)+it.size.toString())
 //                Log.i("ScanCallback", it)
-
                 val int16Values = bytesToInt16Array(it)
-                Log.i("ScanCallback", int16Values.toString())
-
-
-//                Log.i("ScanCallback" )
-//                value+=1
-//                if(value%1000==0){
-//                    Log.i("ScanCallback", value.toString())
-//                }
+//                Log.i("ScanCallback", int16Values.toString())
             }
         }
     }
@@ -158,7 +118,9 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bluetooth)
 
-        requestBluetoothPermissions()
+        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        registerReceiver(bluetoothStateReceiver, filter)
+
         startScanning()
         val sendButton = findViewById<Button>(R.id.send_button)
         sendButton.setOnClickListener {
@@ -169,7 +131,12 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
 
     }
 
+    @SuppressLint("MissingPermission")
     private fun startScanning() {
+        if (bluetoothAdapter?.isEnabled == false) {
+            Log.e("ScanCallback", "Bluetooth off when starting scan")
+            return
+        }
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
                 super.onScanResult(callbackType, result)
@@ -179,7 +146,9 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                     if (device.name == "MonashMap") {
                         // Stop scanning and connect to the device
                         bluetoothLeScanner?.stopScan(this)
-                        connectToDevice(device)
+                        bluetoothGatt = device.connectGatt(baseContext, false, gattCallback)
+                        Log.i("ScanCallback", "Connecting to ${device.name}")
+
                     }
                 }
             }
@@ -187,43 +156,13 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             override fun onBatchScanResults(results: MutableList<ScanResult>?) {
                 super.onBatchScanResults(results)
             }
-
             override fun onScanFailed(errorCode: Int) {
                 Log.e("ScanCallback", "Scan failed with error: $errorCode")
             }
         }
-
         bluetoothLeScanner?.startScan(scanCallback)
     }
 
-    private fun connectToDevice(device: BluetoothDevice) {
-        bluetoothGatt = device.connectGatt(this, false, gattCallback)
-        Log.i("ScanCallback", "Connecting to ${device.name}")
-    }
-
-    private fun requestBluetoothPermissions() {
-        val requestMultiplePermissions = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            permissions.entries.forEach {
-                Log.d("ScanCallback", "${it.key} = ${it.value}")
-            }
-        }
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_SCAN
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestMultiplePermissions.launch(
-                arrayOf(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            )
-        }
-    }
     fun bytesToInt16Array(data: ByteArray): List<Pair<Int, Int>> {
         val int16Values = mutableListOf<Pair<Int, Int>>()
         for (i in 0 until data.size - 3 step 4) {
@@ -248,4 +187,30 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         return int16Values
     }
 
+    private val bluetoothStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (BluetoothAdapter.ACTION_STATE_CHANGED == intent?.action) {
+                val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                when (state) {
+                    BluetoothAdapter.STATE_OFF -> {
+                        // Bluetooth is turned off
+                        Log.i("ScanCallback", "Bluetooth is OFF")
+                        // Handle disconnect or prompt user to enable Bluetooth
+                    }
+                    BluetoothAdapter.STATE_ON -> {
+                        Log.i("ScanCallback", "Bluetooth is ON")
+                        startScanning()
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+
+
+
+
+
+

@@ -9,11 +9,25 @@
     tools:context=".MainActivity">
 
 
+  <TextView
+      android:id="@+id/allow_permissions"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:visibility="gone"
+      android:text="Allow Permissions"
+      app:layout_constraintBottom_toTopOf="@+id/maps_button"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.501"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintVertical_bias="0.096" />
+
   <Button
       android:id="@+id/maps_button"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="Go to Maps"
+      android:visibility="gone"
       app:layout_constraintBottom_toTopOf="@+id/smart_shoe_button"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.498"
@@ -27,6 +41,7 @@
       android:layout_height="wrap_content"
       android:layout_marginBottom="68dp"
       android:text="Connect Shoe"
+      android:visibility="gone"
       app:layout_constraintBottom_toTopOf="@+id/data_visalize"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent" />
@@ -37,6 +52,7 @@
       android:layout_height="wrap_content"
       android:layout_marginBottom="176dp"
       android:text="Viualize Data"
+      android:visibility="gone"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.498"
