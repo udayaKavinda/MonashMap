@@ -76,8 +76,6 @@ class DirectionsManager(private val context: Context, private val mapManager: Ma
         })
     }
 
-
-
     fun removeDirections() {
         polylineList.forEach { polyline ->
             polyline.remove()

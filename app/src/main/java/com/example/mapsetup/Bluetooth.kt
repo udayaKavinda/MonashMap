@@ -17,6 +17,7 @@ import java.util.stream.Collector.Characteristics
 class Bluetooth : AppCompatActivity() {
     var characteristic2: BluetoothGattCharacteristic? = null
     var ggatt:BluetoothGatt?=null
+    var value=0
 
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -33,7 +34,7 @@ class Bluetooth : AppCompatActivity() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                gatt?.requestMtu(156)
+                gatt?.requestMtu(512)
                 Log.i("ScanCallback", "Connected to GATT server.")
                 Log.i("ScanCallback", "Attempting to start service discovery: ${gatt?.discoverServices()}")
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -137,8 +138,18 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             characteristic: BluetoothGattCharacteristic?
         ) {
             characteristic?.value?.let {
-                Log.i("ScanCallback", String(it, Charsets.UTF_8)+it.size.toString())
+//                Log.i("ScanCallback", value.toString()+String(it, Charsets.UTF_8)+it.size.toString())
+//                Log.i("ScanCallback", it)
+
+                val int16Values = bytesToInt16Array(it)
+                Log.i("ScanCallback", int16Values.toString())
+
+
 //                Log.i("ScanCallback" )
+//                value+=1
+//                if(value%1000==0){
+//                    Log.i("ScanCallback", value.toString())
+//                }
             }
         }
     }
@@ -213,4 +224,28 @@ override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             )
         }
     }
+    fun bytesToInt16Array(data: ByteArray): List<Pair<Int, Int>> {
+        val int16Values = mutableListOf<Pair<Int, Int>>()
+        for (i in 0 until data.size - 3 step 4) {
+            // Higher and lower bytes for real part
+            val higherByteReal = data[i].toInt()
+            val lowerByteReal = data[i + 1].toInt()
+
+            // Higher and lower bytes for imaginary part
+            val higherByteImag = data[i + 2].toInt()
+            val lowerByteImag = data[i + 3].toInt()
+
+            // Combine the two bytes into a 16-bit signed integer
+            var valueReal = (higherByteReal shl 8) or (lowerByteReal and 0xFF)
+            var valueImag = (higherByteImag shl 8) or (lowerByteImag and 0xFF)
+
+            // Convert to signed 16-bit integer if needed
+            if (valueReal > 0x7FFF) valueReal -= 0x10000
+            if (valueImag > 0x7FFF) valueImag -= 0x10000
+
+            int16Values.add(Pair(valueReal, valueImag))
+        }
+        return int16Values
+    }
+
 }
