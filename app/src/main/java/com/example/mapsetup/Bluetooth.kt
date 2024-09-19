@@ -1,5 +1,6 @@
 package com.example.mapsetup
 
+import FileManager
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.*
@@ -18,8 +19,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import org.json.JSONObject
 import java.util.UUID
+import android.content.ContentValues
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 
 class Bluetooth : AppCompatActivity() {
+    private lateinit var fileManager: FileManager
+    var byteArrayArray: Array<ByteArray> = arrayOf()
+    lateinit var userInput :String
+    lateinit var dataView: TextView
+
+    var countBytes=1000001
+    val byteArrayList = byteArrayArray.toMutableList()
     var characteristic2: BluetoothGattCharacteristic? = null
     var ggatt: BluetoothGatt? = null
     var value = 0
@@ -102,7 +117,15 @@ class Bluetooth : AppCompatActivity() {
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
             characteristic?.value?.let {
+
+                writeToFile(it)
                 val int16Values = bytesToInt16Array(it)
+                runOnUiThread {
+                    if (dataView != null) {
+                        dataView.text = int16Values.toString()
+                    }}
+
+
 //                Log.i("ScanCallback", int16Values.toString())
             }
         }
@@ -122,6 +145,8 @@ class Bluetooth : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bluetooth)
+        fileManager = FileManager(this)
+
 
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothStateReceiver, filter)
@@ -132,6 +157,21 @@ class Bluetooth : AppCompatActivity() {
         sendButton.setOnClickListener {
             characteristic2?.setValue(byteArrayOf(0x01))
             ggatt?.writeCharacteristic(characteristic2)
+        }
+
+        val editText = findViewById<EditText>(R.id.editText)
+        val buttonSubmit = findViewById<Button>(R.id.buttonSubmit)
+        dataView = findViewById(R.id.view_data)
+
+        // Set up the Button click listener
+        buttonSubmit.setOnClickListener {
+            // Get the text input from the EditText
+            userInput = editText.text.toString()
+            countBytes=0
+
+
+            // Show the input as a Toast or process it as needed
+//            Toast.makeText(this, "You entered: $userInput", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -205,4 +245,70 @@ class Bluetooth : AppCompatActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(bluetoothStateReceiver)
+        handler.removeCallbacks(reconnectRunnable)
+        bluetoothGatt?.disconnect()
+        bluetoothGatt?.close()
+    }
+
+    fun writeToFile(byteArray: ByteArray) {
+        countBytes+=1
+
+        if (countBytes==101){
+
+            byteArrayArray = byteArrayList.toTypedArray()
+//            Log.i("ScanCallback", byteArrayArray.size.toString())
+//            runOnUiThread {
+//                Toast.makeText(this, byteArrayArray.size.toString(), Toast.LENGTH_SHORT).show()
+//            }
+            if(fileManager.saveByteArraysToFile( userInput+".dat", byteArrayArray)){
+                runOnUiThread {
+                    Toast.makeText(this, "Data saved to file successfully!", Toast.LENGTH_SHORT).show()
+                }
+            }else{
+                runOnUiThread {
+                    Toast.makeText(this, "Error saving file", Toast.LENGTH_SHORT).show()
+                }
+            }
+            byteArrayArray = arrayOf()
+            byteArrayList.clear()
+
+        }else if(countBytes<101){
+            byteArrayList.add(byteArray)
+        }
+
+
+
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
