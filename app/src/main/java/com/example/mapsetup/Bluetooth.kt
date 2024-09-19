@@ -29,12 +29,11 @@ import android.widget.Toast
 
 class Bluetooth : AppCompatActivity() {
     private lateinit var fileManager: FileManager
-    var byteArrayArray: Array<ByteArray> = arrayOf()
+    var dataList: MutableList<List<Pair<Int, Int>>> = mutableListOf()
     lateinit var userInput :String
     lateinit var dataView: TextView
 
     var countBytes=1000001
-    val byteArrayList = byteArrayArray.toMutableList()
     var characteristic2: BluetoothGattCharacteristic? = null
     var ggatt: BluetoothGatt? = null
     var value = 0
@@ -118,8 +117,9 @@ class Bluetooth : AppCompatActivity() {
         override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
             characteristic?.value?.let {
 
-                writeToFile(it)
+
                 val int16Values = bytesToInt16Array(it)
+                writeToFile(int16Values)
                 runOnUiThread {
                     if (dataView != null) {
                         dataView.text = int16Values.toString()
@@ -254,17 +254,16 @@ class Bluetooth : AppCompatActivity() {
         bluetoothGatt?.close()
     }
 
-    fun writeToFile(byteArray: ByteArray) {
+    fun writeToFile(sweep: List<Pair<Int, Int>>) {
         countBytes+=1
 
         if (countBytes==101){
 
-            byteArrayArray = byteArrayList.toTypedArray()
-//            Log.i("ScanCallback", byteArrayArray.size.toString())
-//            runOnUiThread {
-//                Toast.makeText(this, byteArrayArray.size.toString(), Toast.LENGTH_SHORT).show()
-//            }
-            if(fileManager.saveByteArraysToFile( userInput+".dat", byteArrayArray)){
+            Log.i("ScanCallback", dataList.size.toString())
+            runOnUiThread {
+                Toast.makeText(this, dataList.size.toString(), Toast.LENGTH_SHORT).show()
+            }
+            if(fileManager.savePairsToCsvFile( userInput+".csv", dataList)){
                 runOnUiThread {
                     Toast.makeText(this, "Data saved to file successfully!", Toast.LENGTH_SHORT).show()
                 }
@@ -273,11 +272,10 @@ class Bluetooth : AppCompatActivity() {
                     Toast.makeText(this, "Error saving file", Toast.LENGTH_SHORT).show()
                 }
             }
-            byteArrayArray = arrayOf()
-            byteArrayList.clear()
+            dataList.clear()
 
         }else if(countBytes<101){
-            byteArrayList.add(byteArray)
+            dataList.add(sweep)
         }
 
 
