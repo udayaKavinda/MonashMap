@@ -131,7 +131,7 @@ class FileManager(private val context: Context) {
 //        return null
 //    }
 
-    fun savePairsToCsvFile(fileName: String, data: MutableList<List<Pair<Int, Int>>>): Boolean {
+    fun savePairsToCsvFile(fileName: String, data: MutableList<List<Pair<Int, Int>>>,userLabel:String): Boolean {
         val contentResolver: ContentResolver = context.contentResolver
         val directory = Environment.DIRECTORY_DOCUMENTS
 
@@ -154,7 +154,7 @@ class FileManager(private val context: Context) {
                     // Open the file for appending if it exists or was newly created
                     contentResolver.openOutputStream(it, "wa")?.use { outputStream ->
                         // Convert the data to CSV format and write it
-                        val csvData = convertPairsToCsv(data)
+                        val csvData = convertPairsToCsv(data,userLabel)
                         outputStream.write(csvData.toByteArray())
                     }
 
@@ -186,12 +186,14 @@ class FileManager(private val context: Context) {
     }
 
     // Function to convert List<Pair<Int, Int>> array to CSV format
-    private fun convertPairsToCsv(data: MutableList<List<Pair<Int, Int>>>): String {
+    private fun convertPairsToCsv(data: MutableList<List<Pair<Int, Int>>>,userLabel:String): String {
         val stringBuilder = StringBuilder()
 
         // Iterate through each row (i.e., each element in the array)
         for (row in data) {
             // For each row, iterate through each Pair and append real and imaginary values
+            stringBuilder.append("${userLabel},")
+
             row.forEach { pair ->
                 stringBuilder.append("${pair.first},${pair.second},") // Add real and imaginary as CSV columns
             }
