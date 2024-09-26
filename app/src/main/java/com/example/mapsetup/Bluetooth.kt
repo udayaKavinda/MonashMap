@@ -409,9 +409,16 @@ class Bluetooth : AppCompatActivity() {
     }
 
     private fun generateColorForValue(value: Int): Int {
+        // Adjust the value to a range from 0 to 255, where 0 is black and 255 is white
+        val adjustedValue = (255 * Math.log(value.toDouble()) / Math.log(2500.0)).toInt()
 
-        return Color.rgb(if (value > 255) 255 else value, 0, if (value > 255) 0 else (255 - value))
+        // Clamp the value between 0 and 255
+        val grayscale = if (adjustedValue > 255) 255 else if (adjustedValue < 0) 0 else adjustedValue
+
+        // Return a grayscale color (R = G = B = grayscale)
+        return Color.rgb(grayscale, grayscale, grayscale)
     }
+
 }
 
 
