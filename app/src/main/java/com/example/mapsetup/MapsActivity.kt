@@ -18,6 +18,7 @@ import com.example.mapsetup.managers.MapManager
 import com.example.mapsetup.managers.PopupManager
 import com.example.mapsetup.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.mapsetup.other.MapsActivityState
+import com.example.mapsetup.services.BluetoothService
 import com.example.mapsetup.services.SensorService
 import com.example.mapsetup.services.TrackingService
 import com.example.mapsetup.services.WeatherService
@@ -118,6 +119,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
         startWeatherService()
         startSensorService()
         subscribeToObservers()
+        startLocationService()
     }
     override fun onMapReady(googleMap: GoogleMap) {
 
@@ -155,6 +157,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback{
     }
     private fun startWeatherService() {
         Intent(this, WeatherService::class.java).also {
+            startService(it)
+        }
+    }
+
+    private fun startLocationService() {
+        Intent(this, BluetoothService::class.java).also {
             startService(it)
         }
     }

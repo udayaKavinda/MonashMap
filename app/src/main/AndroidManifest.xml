@@ -72,6 +72,9 @@
         <service
             android:name=".services.SensorService"
             android:exported="false" />
+        <service
+            android:name=".services.BluetoothService"
+            android:exported="false" />
     </application>
 
 </manifest>
