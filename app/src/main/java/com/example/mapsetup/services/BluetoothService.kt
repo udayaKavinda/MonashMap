@@ -1,6 +1,5 @@
 package com.example.mapsetup.services
 
-
 import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -21,10 +20,15 @@ class BluetoothService : LifecycleService() {
 
     private var bluetoothGatt: BluetoothGatt? = null
     private val handler = Handler(Looper.getMainLooper())
+//    private var isLocationEnabled: Boolean? = null
     private val retryDelay: Long = 1000 // Retry delay of 1 second
 
+    // Remember last connected device for auto-reconnect
+    private var lastConnectedDevice: BluetoothDevice? = null
+    private var isReconnecting: Boolean = false // Flag to prevent multiple reconnect attempts
+
     companion object {
-        var bluetoothData = MutableLiveData<BluetoothResponse>()
+        var bluetoothData: MutableLiveData<BluetoothResponse> = MutableLiveData()
     }
 
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
@@ -36,29 +40,31 @@ class BluetoothService : LifecycleService() {
         bluetoothAdapter?.bluetoothLeScanner
     }
 
-    // Declare the scanCallback at the class level
-    private val scanCallback = object : ScanCallback() {
+    // Declare the scanCallback with an explicit type
+    private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             result?.let {
-                val device = it.device
+                val device: BluetoothDevice = it.device
                 if (device.name == "MonashMap") {
-                    bluetoothLeScanner?.stopScan(this) // Use 'this' to explicitly stop this callback
+                    bluetoothLeScanner?.stopScan(this) // Stop scanning once the device is found
                     bluetoothGatt = device.connectGatt(this@BluetoothService, false, gattCallback)
+                    lastConnectedDevice = device // Save the device for future reconnections
                     Log.i("BluetoothService", "Connecting to ${device.name}")
                 }
             }
         }
     }
 
-    private val gattCallback = object : BluetoothGattCallback() {
+    // Declare the gattCallback with an explicit type
+    private val gattCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.i("BluetoothService", "Connected to GATT server.")
-                // Request a higher MTU (e.g., 512 bytes)
+                isReconnecting = false // Reset reconnect flag
                 gatt?.requestMtu(512)
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i("BluetoothService", "Disconnected from GATT server.")
-                handler.postDelayed(reconnectRunnable, retryDelay) // Retry connection
+                handleDisconnection(gatt)
             }
         }
 
@@ -73,11 +79,11 @@ class BluetoothService : LifecycleService() {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                val service = gatt?.getService(UUID.fromString("00000000-cc7a-482a-984a-7f2ed5b3e58f"))
-                val characteristic = service?.getCharacteristic(UUID.fromString("00000001-8e22-4541-9d4c-21edae82ed19"))
+                val service: BluetoothGattService? = gatt?.getService(UUID.fromString("00000000-cc7a-482a-984a-7f2ed5b3e58f"))
+                val characteristic: BluetoothGattCharacteristic? = service?.getCharacteristic(UUID.fromString("00000001-8e22-4541-9d4c-21edae82ed19"))
                 if (characteristic != null) {
                     gatt.setCharacteristicNotification(characteristic, true)
-                    val descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+                    val descriptor: BluetoothGattDescriptor? = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
                     descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                     gatt.writeDescriptor(descriptor)
                 }
@@ -90,17 +96,25 @@ class BluetoothService : LifecycleService() {
                 Log.i("BluetoothService", "Received data: ${bluetoothData.value}")
             }
         }
+
+        private fun handleDisconnection(gatt: BluetoothGatt?) {
+            gatt?.close()
+            handler.postDelayed(reconnectRunnable, retryDelay) // Retry connection after delay
+        }
     }
 
+    // Reconnect runnable to attempt reconnecting after delay
     private val reconnectRunnable = object : Runnable {
         override fun run() {
-            bluetoothGatt?.let {
+            if (lastConnectedDevice != null && !isReconnecting) {
+                isReconnecting = true
                 Log.i("BluetoothService", "Attempting to reconnect...")
-                it.connect()
+                bluetoothGatt = lastConnectedDevice?.connectGatt(this@BluetoothService, false, gattCallback)
             }
         }
     }
 
+    // BroadcastReceiver to handle Bluetooth and Location state changes
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -117,7 +131,10 @@ class BluetoothService : LifecycleService() {
                 }
                 LocationManager.MODE_CHANGED_ACTION -> {
                     val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                            || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                    if (isLocationEnabled) {
                         Log.i("BluetoothService", "Location enabled, restarting scan...")
                         startScanning()
                     } else {
@@ -146,15 +163,21 @@ class BluetoothService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        startScanning()
+        if (lastConnectedDevice != null) {
+            Log.i("BluetoothService", "Attempting to reconnect to the last known device...")
+            handler.post(reconnectRunnable) // Try reconnecting to the last known device
+        } else {
+            startScanning() // Start scanning if no device is currently connected
+        }
         return START_STICKY // Keep the service running
     }
 
     fun startScanning() {
+        bluetoothLeScanner?.stopScan(scanCallback)
         bluetoothLeScanner?.startScan(scanCallback) // Start scan with the scanCallback
     }
 
-    // Optionally stop scanning and disconnect when the service is destroyed
+    // Clean up resources and unregister receivers
     override fun onDestroy() {
         unregisterReceiver(bluetoothReceiver) // Unregister receiver on service destroy
         bluetoothLeScanner?.stopScan(scanCallback) // Explicitly stop the same scanCallback
