@@ -163,6 +163,7 @@ class BluetoothService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        Log.i("BluetoothService","Start")
         if (lastConnectedDevice != null) {
             Log.i("BluetoothService", "Attempting to reconnect to the last known device...")
             handler.post(reconnectRunnable) // Try reconnecting to the last known device

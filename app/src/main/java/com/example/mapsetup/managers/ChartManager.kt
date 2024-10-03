@@ -70,6 +70,7 @@ class ChartManager(
         for (x in matrix.indices) {
             for (y in matrix[x].indices) {
                 val realValue = matrix[x][y]
+                entries.add(Entry(x.toFloat(), y.toFloat()))
                 entries.add(Entry(x.toFloat(), y.toFloat())) // Add entry for x, y positions
                 colors.add(generateColorForValue(realValue)) // Set color based on intensity
             }
