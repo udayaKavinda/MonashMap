@@ -1,0 +1,97 @@
+2024-08-22 01:05:26,297 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 201221640 Bytes (594542592)
+2024-08-22 01:05:26,398 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 216034952 Bytes (594542592)
+2024-08-22 01:05:27,586 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 277378696 Bytes (594542592)
+2024-08-22 01:05:28,190 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: RTC
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: NVIC
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SEQUENCER
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: STM32_WPAN
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: HSEM
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: MEMORYMAP
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: IPCC
+2024-08-22 01:05:28,191 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: SYS
+2024-08-22 01:05:28,192 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: GPIO
+2024-08-22 01:05:28,192 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: RCC
+2024-08-22 01:05:28,192 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: RF
+2024-08-22 01:05:28,192 [INFO] BlockDiagram:2766 - set Specific Code input for plugin: TINY_LPM
+2024-08-22 01:05:28,194 [INFO] CodeGenerator:807 - code generatio: config db path: D:\stm\STM32CubeIDE_1.16.0\STM32CubeIDE\plugins\com.st.stm32cube.common.mx_6.12.0.202406281431\\db\
+2024-08-22 01:05:28,248 [WARN] IP:2191 - SERVICE2_UUID not found: check if there is a RefParameter without a condition.
+2024-08-22 01:05:28,251 [WARN] IP:2191 - SERVICE3_UUID not found: check if there is a RefParameter without a condition.
+2024-08-22 01:05:28,255 [WARN] IP:2191 - SERVICE4_UUID not found: check if there is a RefParameter without a condition.
+2024-08-22 01:05:28,258 [WARN] IP:2191 - SERVICE5_UUID not found: check if there is a RefParameter without a condition.
+2024-08-22 01:05:28,502 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\MXTmpFiles\license.tmp_save
+2024-08-22 01:05:28,956 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\MXTmpFiles\license.tmp
+2024-08-22 01:05:29,063 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\MXTmpFiles\gpio.tmp_save
+2024-08-22 01:05:29,242 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\MXTmpFiles\gpio.tmp
+2024-08-22 01:05:29,437 [WARN] IPConfigManager:98 - WARNING: Missing Config File for MEMORYMAP ip!!
+2024-08-22 01:05:29,438 [WARN] IP:2191 - DefaultDataRegion not found: check if there is a RefParameter without a condition.
+2024-08-22 01:05:29,478 [WARN] IPConfigManager:98 - WARNING: Missing Config File for RF ip!!
+2024-08-22 01:05:29,848 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-08-22 01:05:29,918 [INFO] Middleware:1439 - No code input for Bsp Dependency
+2024-08-22 01:05:29,982 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\app_common.h_save
+2024-08-22 01:05:30,125 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\app_common.h
+2024-08-22 01:05:30,154 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\app_debug.h_save
+2024-08-22 01:05:30,296 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\app_debug.h
+2024-08-22 01:05:30,324 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\app_conf.h_save
+2024-08-22 01:05:30,553 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\app_conf.h
+2024-08-22 01:05:30,593 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\app_entry.h_save
+2024-08-22 01:05:30,693 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\app_entry.h
+2024-08-22 01:05:30,713 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\hw_conf.h_save
+2024-08-22 01:05:30,853 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\hw_conf.h
+2024-08-22 01:05:30,883 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\hw_if.h_save
+2024-08-22 01:05:31,004 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\hw_if.h
+2024-08-22 01:05:31,034 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\utilities_conf.h_save
+2024-08-22 01:05:31,124 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\utilities_conf.h
+2024-08-22 01:05:31,154 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\stm32_lpm_if.h_save
+2024-08-22 01:05:31,244 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\stm32_lpm_if.h
+2024-08-22 01:05:31,274 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\app_entry.c_save
+2024-08-22 01:05:31,394 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\app_entry.c
+2024-08-22 01:05:31,424 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\app_debug.c_save
+2024-08-22 01:05:31,544 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\app_debug.c
+2024-08-22 01:05:31,574 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\hw_timerserver.c_save
+2024-08-22 01:05:31,696 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\hw_timerserver.c
+2024-08-22 01:05:31,722 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\stm32_lpm_if.c_save
+2024-08-22 01:05:31,844 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\stm32_lpm_if.c
+2024-08-22 01:05:31,871 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\app_ble.c_save
+2024-08-22 01:05:32,133 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\app_ble.c
+2024-08-22 01:05:32,166 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\app_ble.h_save
+2024-08-22 01:05:32,259 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\app_ble.h
+2024-08-22 01:05:32,293 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\ble_conf.h_save
+2024-08-22 01:05:32,405 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\ble_conf.h
+2024-08-22 01:05:32,425 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\ble_dbg_conf.h_save
+2024-08-22 01:05:32,515 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\ble_dbg_conf.h
+2024-08-22 01:05:32,535 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\tl_dbg_conf.h_save
+2024-08-22 01:05:32,618 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\tl_dbg_conf.h
+2024-08-22 01:05:32,638 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\template_server_app.h_save
+2024-08-22 01:05:32,715 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\template_server_app.h
+2024-08-22 01:05:32,778 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\custom_stm.c_save
+2024-08-22 01:05:33,618 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\custom_stm.c
+2024-08-22 01:05:33,652 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\custom_stm.h_save
+2024-08-22 01:05:33,828 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\custom_stm.h
+2024-08-22 01:05:33,853 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\custom_app.c_save
+2024-08-22 01:05:34,035 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\custom_app.c
+2024-08-22 01:05:34,058 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\App\custom_app.h_save
+2024-08-22 01:05:34,138 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\App\custom_app.h
+2024-08-22 01:05:34,161 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\STM32_WPAN\Target\hw_ipcc.c_save
+2024-08-22 01:05:34,271 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\STM32_WPAN\Target\hw_ipcc.c
+2024-08-22 01:05:34,307 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\stm32wbxx_it.c_save
+2024-08-22 01:05:34,430 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\stm32wbxx_it.c
+2024-08-22 01:05:34,450 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\stm32wbxx_it.h_save
+2024-08-22 01:05:34,530 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\stm32wbxx_it.h
+2024-08-22 01:05:34,563 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\stm32wbxx_hal_msp.c_save
+2024-08-22 01:05:34,703 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\stm32wbxx_hal_msp.c
+2024-08-22 01:05:34,716 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\MXTmpFiles\system.tmp_save
+2024-08-22 01:05:34,793 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\MXTmpFiles\system.tmp
+2024-08-22 01:05:34,827 [INFO] CodeEngine:311 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\stm32wbxx_hal_conf.h_save
+2024-08-22 01:05:34,941 [INFO] CodeEngine:335 - Generated code: D:\stm\work_here\level2\Core\Inc\stm32wbxx_hal_conf.h
+2024-08-22 01:05:34,974 [WARN] IPConfigManager:3005 - Warning: the RefConfig RCC_PClockConfig is not available in your config.xml file
+2024-08-22 01:05:35,024 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Inc\main.h_save
+2024-08-22 01:05:35,145 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Inc\main.h
+2024-08-22 01:05:35,167 [INFO] CodeEngine:255 - oldGeneratedFile, D:\stm\work_here\level2\Core\Src\main.c_save
+2024-08-22 01:05:35,318 [INFO] CodeEngine:279 - Generated code: D:\stm\work_here\level2\Core\Src\main.c
+2024-08-22 01:05:35,919 [INFO] ProjectBuilder:3249 - Time for Copy HAL[1] : 334mS.
+2024-08-22 01:05:35,929 [INFO] ProjectBuilder:4828 - Project Generator version: 4.4.0-B60
+2024-08-22 01:05:36,021 [INFO] ConfigFileManager:1531 - The Die is : DIE495
+2024-08-22 01:05:36,034 [INFO] ApiDbMcu:508 - Load IP Config File for FATFS
+2024-08-22 01:05:36,048 [INFO] ApiDbMcu:508 - Load IP Config File for FREERTOS
+2024-08-22 01:05:36,069 [INFO] ApiDbMcu:508 - Load IP Config File for TOUCHSENSING
+2024-08-22 01:05:36,089 [INFO] ApiDbMcu:508 - Load IP Config File for USB_Device

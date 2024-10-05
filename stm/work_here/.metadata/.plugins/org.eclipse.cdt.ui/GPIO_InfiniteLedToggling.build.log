@@ -1,0 +1,10 @@
+23:58:58 **** Incremental Build of configuration Debug for project GPIO_InfiniteLedToggling ****
+make -j12 all 
+arm-none-eabi-size  GPIO_InfiniteLedToggling.elf 
+   text	   data	    bss	    dec	    hex	filename
+   1856	      4	   5148	   7008	   1b60	GPIO_InfiniteLedToggling.elf
+Finished building: default.size.stdout
+ 
+
+23:58:58 Build Finished. 0 errors, 0 warnings. (took 157ms)
+

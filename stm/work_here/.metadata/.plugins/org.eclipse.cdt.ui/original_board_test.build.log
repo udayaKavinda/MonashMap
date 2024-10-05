@@ -1,0 +1,20 @@
+13:58:25 **** Incremental Build of configuration Debug for project original_board_test ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/example_service.c" -mcpu=cortex-m4 -std=gnu99 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32WB55xx -c -I../Core/Inc -I../Drivers/STM32WBxx_HAL_Driver/Inc -I../Drivers/STM32WBxx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32WBxx/Include -I../Drivers/CMSIS/Include -I"D:/stm/work_here/original_board_test/cortex_m4_gcc/rss/include" -I"D:/stm/work_here/original_board_test/cortex_m4_gcc/integration" -I"D:/stm/work_here/original_board_test/cortex_m4_gcc/examples" -I../STM32_WPAN/App -I../Utilities/lpm/tiny_lpm -I../Middlewares/ST/STM32_WPAN -I../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread -I../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl -I../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci -I../Middlewares/ST/STM32_WPAN/utilities -I../Middlewares/ST/STM32_WPAN/ble/core -I../Middlewares/ST/STM32_WPAN/ble/core/auto -I../Middlewares/ST/STM32_WPAN/ble/core/template -I../Middlewares/ST/STM32_WPAN/ble/svc/Inc -I../Middlewares/ST/STM32_WPAN/ble/svc/Src -I../Utilities/sequencer -I../Middlewares/ST/STM32_WPAN/ble -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/example_service.d" -MT"Core/Src/example_service.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/example_service.o"
+../Core/Src/example_service.c:237:13: warning: 'print_data' defined but not used [-Wunused-function]
+  237 | static void print_data(acc_int16_complex_t *data, uint16_t data_length)
+      |             ^~~~~~~~~~
+arm-none-eabi-gcc -o "original_board_test.elf" @"objects.list"  -lacc_detector_distance_a121 -lacc_detector_presence_a121 -lacconeer_a121 -mcpu=cortex-m4 -T"D:\stm\work_here\original_board_test\STM32WB55RGVX_FLASH.ld" --specs=nosys.specs -Wl,-Map="original_board_test.map" -Wl,--gc-sections -static -L"D:\stm\work_here\original_board_test\cortex_m4_gcc\rss\lib" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: original_board_test.elf
+ 
+arm-none-eabi-size  original_board_test.elf 
+arm-none-eabi-objdump -h -S original_board_test.elf  > "original_board_test.list"
+   text	   data	    bss	    dec	    hex	filename
+  98420	   2793	   3943	 105156	  19ac4	original_board_test.elf
+Finished building: default.size.stdout
+ 
+Finished building: original_board_test.list
+ 
+
+13:58:27 Build Finished. 0 errors, 1 warnings. (took 1s.342ms)
+

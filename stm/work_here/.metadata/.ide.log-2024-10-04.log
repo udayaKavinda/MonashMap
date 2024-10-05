@@ -1,0 +1,5 @@
+2024-10-04 12:35:26,159 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 12:35:26.149 ERROR Chromium process exit code: 1
+2024-10-04 12:35:26,181 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 
+2024-10-04 12:35:26,182 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 12:35:26.182 ERROR Crash dump dir: C:\Users\udaya\AppData\Local\JxBrowser\7.38.2\CrashReports
+2024-10-04 12:35:26,182 [ERROR] LogOutputStream:75 - [STDERR_REDIRECT] 
+2024-10-04 12:35:26,188 [ERROR] WebApp:397 - JxBrowser engine crashed! Exit code: 1
